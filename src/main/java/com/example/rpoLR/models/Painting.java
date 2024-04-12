@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "countries")
+@Table(name = "paintings")
 @Access(AccessType.FIELD)
-public class Country {
+public class Painting {
 
-    public Country() { }
-    public Country(Long id) {
+    public Painting() { }
+    public Painting(Long id) {
         this.id = id;
     }
 
@@ -21,10 +21,18 @@ public class Country {
     @Column(name = "id", updatable = false, nullable = false)
     public long id;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "name", nullable = false)
     public String name;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "country")
-    public List<Artist> artists = new ArrayList<Artist>();
+    @Column(name = "year")
+    public int year;
+
+    @ManyToOne()
+    @JoinColumn(name = "artistid")
+    public Artist artistid;
+
+    @ManyToOne()
+    @JoinColumn(name = "museumid")
+    public Museum museumid;
 }
+
