@@ -45,3 +45,4 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
         chain.doFilter(request, response);
     }
 }
+

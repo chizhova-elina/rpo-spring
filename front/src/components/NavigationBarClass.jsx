@@ -7,6 +7,7 @@ import Utils from "../utils/Utils";
 import BackendService from "../services/BackendService";
 import {connect} from "react-redux";
 import {userActions} from "../utils/Rdx";
+import {faBars} from "@fortawesome/free-solid-svg-icons";
 
 class NavigationBarClass extends React.Component {
 
@@ -36,7 +37,11 @@ class NavigationBarClass extends React.Component {
     render() {
         return (
             <Navbar bg="light" expand="lg">
-                <Navbar.Brand><FontAwesomeIcon icon={faHome} />{' '}My RPO</Navbar.Brand>
+                <button type="button"
+                        className="btn btn-outline-secondary mr-2"
+                        onClick={this.props.toggleSideBar}>
+                    <FontAwesomeIcon icon={ faBars} />
+                </button>
                 <Navbar.Brand>myRPO</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
