@@ -29,10 +29,10 @@ public class Painting {
 
     @ManyToOne()
     @JoinColumn(name = "artistid")
-    public Artist artistid;
+    public Artist artist;
 
     @ManyToOne()
     @JoinColumn(name = "museumid")
-    public Museum museumid;
+    public Museum museum;
 }
 

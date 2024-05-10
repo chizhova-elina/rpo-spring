@@ -1,81 +1,61 @@
 import React from 'react';
-import { Navbar, Nav } from 'react-bootstrap'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faHome, faUser} from '@fortawesome/free-solid-svg-icons'
-import {Link, useNavigate} from 'react-router-dom';
+import { Navbar, Nav } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHome, faUser, faBars } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate, Link } from 'react-router-dom';
 import Utils from "../utils/Utils";
+import { useDispatch, connect } from "react-redux";
+import { userActions } from "../utils/Rdx";
 import BackendService from "../services/BackendService";
-import {connect} from "react-redux";
-import {userActions} from "../utils/Rdx";
-import {faBars} from "@fortawesome/free-solid-svg-icons";
 
-class NavigationBarClass extends React.Component {
+const NavigationBar = (props) => {
+    let navigate = useNavigate();
+    let uname = Utils.getUserName();
+    const dispatch = useDispatch();
 
-    constructor(props) {
-        super(props);
-        this.goHome = this.goHome.bind(this);
-        this.logout = this.logout.bind(this)
+    const goHome = () => {
+        navigate("home", { replace: true });
     }
 
-
-    logout() {
+    const logout = () => {
         BackendService.logout()
             .then(() => {
                 Utils.removeUser();
-                this.props.dispatch(userActions.logout())
-                this.props.navigate('Login');
+                dispatch(userActions.logout());
+                navigate("login", { replace: true });
             })
     }
 
-
-
-    goHome() {
-        this.props.navigate('home');
-    }
-
-
-    render() {
-        return (
-            <Navbar bg="light" expand="lg">
-                <button type="button"
-                        className="btn btn-outline-secondary mr-2"
-                        onClick={this.props.toggleSideBar}>
-                    <FontAwesomeIcon icon={ faBars} />
-                </button>
-                <Navbar.Brand>myRPO</Navbar.Brand>
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className="ms-auto">
-                        {/*<Nav.Link href="/home">Home</Nav.Link>*/}
-                        <Nav.Link as={Link} to="/home">Home</Nav.Link>
-                        <Nav.Link onClick={this.goHome}>Another home</Nav.Link>
-                        <Nav.Link onClick={this.goHome/*() => { this.props.history.push("/home")}*/} >Yet another home</Nav.Link>
-                    </Nav>
-                </Navbar.Collapse>
-                <Navbar.Text>{this.props.user && this.props.user.login}</Navbar.Text>
-                { this.props.user &&
-                    <Nav.Link onClick={this.logout}><FontAwesomeIcon icon={faUser} fixedWidth />{' '}Выход</Nav.Link>
+    return (
+        <Navbar bg="light" expand="lg">
+            <button type="button"
+                className="btn btn-outline-secondary mr-2"
+                onClick={props.toggleSideBar}>
+                <FontAwesomeIcon icon={faBars} />
+            </button>
+            <Navbar.Brand><FontAwesomeIcon icon={faHome} />{' '}My RPO</Navbar.Brand>
+            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Collapse id="basic-navbar-nav">
+                <Nav className="me-auto">
+                    {/*<Nav.Link href={"\home"}>Home</Nav.Link>*/}
+                    <Nav.Link as={Link} to="/home">Home</Nav.Link>
+                    <Nav.Link onClick={goHome}>Another Home</Nav.Link>
+                    <Nav.Link onClick={() => {navigate("account")}}>Account</Nav.Link>
+                </Nav>
+                <Navbar.Text>{uname}</Navbar.Text>
+                {props.user &&
+                    <Nav.Link onClick={logout}><FontAwesomeIcon icon={faUser} fixedWidth />{' '}Выход</Nav.Link>
                 }
-                { !this.props.user &&
+                {!props.user &&
                     <Nav.Link as={Link} to="/login"><FontAwesomeIcon icon={faUser} fixedWidth />{' '}Вход</Nav.Link>
                 }
-            </Navbar>
-        );
-    }
-
-
-}
-
-const NavigationBar = props => {
-    const navigate = useNavigate()
-
-    return <NavigationBarClass navigate={navigate} {...props} />
-}
-
+            </Navbar.Collapse>
+        </Navbar>
+    );
+};
 
 const mapStateToProps = state => {
     const { user } = state.authentication;
     return { user };
 }
-
-export default  connect(mapStateToProps)(NavigationBar);
+export default connect(mapStateToProps)(NavigationBar);

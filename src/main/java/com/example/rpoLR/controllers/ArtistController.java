@@ -4,12 +4,17 @@ import com.example.rpoLR.models.Artist;
 import com.example.rpoLR.models.Country;
 import com.example.rpoLR.repositories.ArtistRepository;
 import com.example.rpoLR.repositories.CountryRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import com.example.rpoLR.tools.DataValidationException;
 
 
 import java.util.HashMap;
@@ -22,22 +27,54 @@ import java.util.Optional;
 @RequestMapping(value = "/api/v1",
         produces = "application/json")
 public class ArtistController {
+    public long findCountryIdByName(String cName){
+        long id = 252;
+        for (long index = 0; index < 251; index++){
+            Optional <Country> cc = countryRepository.findById(index);
+            if (cc.isPresent()) {
+                Country countr = cc.get();
+                if (cName.equalsIgnoreCase(countr.name)){
+                    id = index;
+                }
+            }
+        }
+        return id;
+    }
     @Autowired
     ArtistRepository artistRepository;
+    @Autowired
     CountryRepository countryRepository;
-
-    @GetMapping("/artists")
+    @GetMapping("/art")
     public List
-    getAllArtists() {
+    getAllArt() {
         return artistRepository.findAll();
+    }
+    @GetMapping("/artists")
+    public Page<Artist> getAllArtists(@RequestParam("page") int page, @RequestParam("limit") int limit) {
+        return artistRepository.findAll(PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "name")));
+    }
+
+    @GetMapping("/artists/{id}")
+    public ResponseEntity getArtist(@PathVariable(value = "id") Long artistId)
+            throws DataValidationException
+    {
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(()-> new DataValidationException("Художник с таким индексом не найден"));
+        return ResponseEntity.ok(artist);
+    }
+
+    @PostMapping("/deleteartists")
+    public ResponseEntity deleteArtists(@Validated @RequestBody List<Artist> artists) {
+        artistRepository.deleteAll(artists);
+        return new ResponseEntity(HttpStatus.OK);
     }
     @PostMapping("/artists")
     public ResponseEntity<Object> createArtist(@RequestBody Artist artist) {
         try {
-            Optional<Country> cc = countryRepository.findById(artist.country.id);
-            if (cc.isPresent()) {
-                artist.country = cc.get();
-            }
+//            Optional<Country> cc = countryRepository.findById(artist.country.id);
+//            if (cc.isPresent()) {
+//                artist.country = cc.get();
+//            }
             Artist nc = artistRepository.save(artist);
             return new ResponseEntity<Object>(nc, HttpStatus.OK);
         }
@@ -56,12 +93,19 @@ public class ArtistController {
     public ResponseEntity<Artist> updateArtist(@PathVariable(value = "id") Long artistId,
                                                @RequestBody Artist artistDetails) {
         Artist artist = null;
-        Optional<Artist>
-                cc = artistRepository.findById(artistId);
+        Optional<Artist> cc = artistRepository.findById(artistId);
+        long ind = findCountryIdByName(artistDetails.country.name);
+        if (ind > 251) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "country not found");
+        }
+        Optional<Country>
+                countr = countryRepository.findById(ind);
+        countr.ifPresent(country -> artistDetails.country = country);
         if (cc.isPresent()) {
             artist = cc.get();
             artist.name = artistDetails.name;
-            artist.age = artistDetails.age;
+            artist.country = artistDetails.country;
+            artist.century = artistDetails.century;
             artistRepository.save(artist);
             return ResponseEntity.ok(artist);
         } else {

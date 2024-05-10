@@ -1,10 +1,17 @@
 package com.example.rpoLR.controllers;
 
+import com.example.rpoLR.models.Country;
 import com.example.rpoLR.models.Museum;
+import com.example.rpoLR.models.Painting;
 import com.example.rpoLR.repositories.MuseumRepository;
+import com.example.rpoLR.tools.DataValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,10 +26,14 @@ public class MuseumController {
     @Autowired
     MuseumRepository museumRepository;
 
-    @GetMapping("/museums")
+    @GetMapping("/mus")
     public List
-    getAllMuseums() {
+    getAllMus() {
         return museumRepository.findAll();
+    }
+    @GetMapping("/museums")
+    public Page<Museum> getAllMuseums(@RequestParam("page") int page, @RequestParam("limit") int limit) {
+        return museumRepository.findAll(PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "name")));
     }
     @PostMapping("/museums")
     public ResponseEntity<Object> createMuseum(@RequestBody Museum museum) {
@@ -49,6 +60,7 @@ public class MuseumController {
         if (cc.isPresent()) {
             museum = cc.get();
             museum.name = museumDetails.name;
+            museum.location = museumDetails.location;
             museumRepository.save(museum);
             return ResponseEntity.ok(museum);
         } else {
@@ -66,6 +78,20 @@ public class MuseumController {
         else
             resp.put("deleted", Boolean.FALSE);
         return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping("/museums/{id}")
+    public ResponseEntity getMuseum(@PathVariable(value = "id") Long museumId)
+            throws DataValidationException {
+        Museum museum = museumRepository.findById(museumId)
+                .orElseThrow(()->new DataValidationException("Музей с таким индексом не найдена"));
+        return ResponseEntity.ok(museum);
+    }
+
+    @PostMapping("/deletemuseums")
+    public ResponseEntity deleteMuseums(@Validated @RequestBody List<Museum> museums) {
+        museumRepository.deleteAll(museums);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
 }

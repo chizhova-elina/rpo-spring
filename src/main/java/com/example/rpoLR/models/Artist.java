@@ -24,15 +24,15 @@ public class Artist {
     @Column(name = "name", nullable = false, unique = true)
     public String name;
 
-    @Column(name = "age")
-    public String age;
+    @Column(name = "century")
+    public String century;
 
     @ManyToOne()
     @JoinColumn(name = "countryid")
     public Country country;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "artistid")
+    @OneToMany(mappedBy = "artist")
     public List<Painting> paintings = new ArrayList<Painting>();
 }
 

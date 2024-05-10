@@ -5,11 +5,13 @@ import com.example.rpoLR.models.Country;
 import com.example.rpoLR.repositories.CountryRepository;
 import com.example.rpoLR.tools.DataValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -21,11 +23,11 @@ public class CountryController {
     @Autowired
     CountryRepository countryRepository;
 
-    @GetMapping("/countries")
-    public List
-    getAllCountries() {
-        return countryRepository.findAll();
-    }
+//    @GetMapping("/countries")
+//    public List<Country>
+//    getAllCountries() {
+//        return countryRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+//    }
     @PostMapping("/countries")
     public ResponseEntity<Object>
     createCountry(@Validated @RequestBody Country country)
@@ -105,5 +107,14 @@ public class CountryController {
         Country country = countryRepository.findById(countryId)
                 .orElseThrow(()->new DataValidationException("Страна с таким индексом не найдена"));
         return ResponseEntity.ok(country);
+    }
+    @GetMapping("/countries")
+    public Page<Country> getAllCountries(@RequestParam("page") int page, @RequestParam("limit") int limit) {
+        return countryRepository.findAll(PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "name")));
+    }
+    @GetMapping("/cntrs")
+    public List
+    getAllCntrs() {
+        return countryRepository.findAll();
     }
 }

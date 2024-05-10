@@ -30,7 +30,7 @@ public class Museum {
     public String location;
 
     @JsonIgnore
-    @OneToMany
+    @OneToMany(mappedBy = "museum")
     public List<Painting> paintings = new ArrayList<Painting>();
 
     @JsonIgnore
